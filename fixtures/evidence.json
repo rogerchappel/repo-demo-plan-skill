@@ -1,0 +1,14 @@
+{
+  "coreWorkflow": "Show the smoke command producing the same output a reviewer can reproduce locally.",
+  "proofPath": "docs/PRD.md",
+  "verification": "npm run smoke && npm test",
+  "claims": [
+    {
+      "text": "The demo plan is grounded in local files.",
+      "proof": "fixtures/sample-repo/README.md"
+    },
+    {
+      "text": "This fixture has live integrations."
+    }
+  ]
+}
