@@ -1,0 +1,25 @@
+{
+  "name": "repo-demo-plan-skill",
+  "version": "0.1.0",
+  "description": "Local-first agent skill that turns repository evidence into a runnable demo plan.",
+  "type": "module",
+  "bin": {
+    "repo-demo-plan": "./src/cli.js"
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/index.js && node --check src/cli.js",
+    "smoke": "node src/cli.js fixtures/sample-repo --evidence fixtures/evidence.json --format markdown",
+    "validate": "bash scripts/validate.sh"
+  },
+  "keywords": [
+    "agent-skill",
+    "demo",
+    "repository",
+    "launch"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
