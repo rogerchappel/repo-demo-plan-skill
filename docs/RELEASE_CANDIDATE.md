@@ -13,6 +13,13 @@ npm run smoke
 bash scripts/validate.sh
 ```
 
+## 2026-06-25 Verification Result
+
+- `npm run check`: passed
+- `npm test`: passed, 3 tests
+- `npm run smoke`: passed through `scripts/validate.sh`
+- `bash scripts/validate.sh`: passed
+
 ## Classification
 
 `ship`: the fixture-backed CLI produces useful demo plans, flags unsupported claims, and stays local-only.
