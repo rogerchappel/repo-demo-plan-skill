@@ -1,0 +1,10 @@
+{
+  "name": "sample-agent-tool",
+  "description": "A tiny local tool used to demonstrate evidence-grounded planning.",
+  "scripts": {
+    "smoke": "node src/cli.js --fixture",
+    "test": "node --test",
+    "check": "node --check src/cli.js",
+    "publish-demo": "npm publish"
+  }
+}
