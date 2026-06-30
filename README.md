@@ -7,6 +7,8 @@ Repo Demo Plan Skill is a local-first CLI and reusable agent skill for turning r
 ```bash
 npm test
 npm run smoke
+npm run package:smoke
+npm run release:check
 node src/cli.js fixtures/sample-repo --evidence fixtures/evidence.json --format markdown
 ```
 
@@ -26,6 +28,19 @@ node src/cli.js fixtures/sample-repo --format markdown
 
 The output includes a command list, five demo beats, proof paths, warnings, and a `ship` or `incubate` classification.
 
+## Verification
+
+```bash
+npm run check
+npm test
+npm run smoke
+npm run package:smoke
+npm run release:check
+```
+
+`npm run package:smoke` verifies the CLI entrypoint, skill instructions,
+fixtures, support docs, changelog, and npm pack contents without publishing.
+
 ## Limitations
 
 - The planner does not run commands; it only recommends a rehearsal path.
@@ -36,3 +51,6 @@ The output includes a command list, five demo beats, proof paths, warnings, and 
 ## Safety Notes
 
 This tool is local-only by default. It does not post to social platforms, create GitHub releases, publish packages, or mutate remote systems. Commands that look destructive or externally mutating are marked for review.
+
+See [SECURITY.md](SECURITY.md) for vulnerability reporting and
+[CONTRIBUTING.md](CONTRIBUTING.md) for local contribution checks.
