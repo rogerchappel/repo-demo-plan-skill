@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added an installed-tarball smoke check to prove the packaged CLI is runnable
+  after `npm install`.
 - Added security and contributing guidance for public support workflows.
 - Strengthened package smoke coverage to verify release-critical files, support
   docs, and CLI bin metadata before `npm pack --dry-run`.
