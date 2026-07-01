@@ -8,6 +8,7 @@ Repo Demo Plan Skill is a local-first CLI and reusable agent skill for turning r
 npm test
 npm run smoke
 npm run package:smoke
+npm run install:smoke
 npm run release:check
 node src/cli.js fixtures/sample-repo --evidence fixtures/evidence.json --format markdown
 ```
@@ -35,11 +36,14 @@ npm run check
 npm test
 npm run smoke
 npm run package:smoke
+npm run install:smoke
 npm run release:check
 ```
 
 `npm run package:smoke` verifies the CLI entrypoint, skill instructions,
 fixtures, support docs, changelog, and npm pack contents without publishing.
+`npm run install:smoke` packs the tarball into a temporary project and runs the
+installed `repo-demo-plan --help` command.
 
 ## Limitations
 
