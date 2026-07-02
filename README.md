@@ -58,3 +58,10 @@ This tool is local-only by default. It does not post to social platforms, create
 
 See [SECURITY.md](SECURITY.md) for vulnerability reporting and
 [CONTRIBUTING.md](CONTRIBUTING.md) for local contribution checks.
+
+## Install
+
+```bash
+npm install repo-demo-plan-skill
+npx repo-demo-plan --help
+```
