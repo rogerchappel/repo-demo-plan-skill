@@ -13,7 +13,8 @@
     "validate": "bash scripts/validate.sh",
     "package:smoke": "node scripts/package-smoke.js",
     "install:smoke": "node scripts/install-smoke.js",
-    "release:check": "npm run validate && npm run package:smoke && npm run install:smoke"
+    "release:check": "npm run validate && npm run package:smoke && npm run install:smoke",
+    "lint": "npm run check"
   },
   "keywords": [
     "agent-skill",
