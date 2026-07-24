@@ -5,6 +5,8 @@
     "smoke": "node src/cli.js --fixture",
     "test": "node --test",
     "check": "node --check src/cli.js",
+    "build": "node src/build.js",
+    "docs": "node src/docs.js",
     "publish-demo": "npm publish"
   }
 }

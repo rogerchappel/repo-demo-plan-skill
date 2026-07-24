@@ -16,7 +16,9 @@ Create a reusable local agent skill that converts repository evidence into a con
 - Inspect package metadata, README, docs, and `SKILL.md`
 - Accept optional JSON evidence
 - Generate setup, workflow, failure, and verification beats
-- Warn on missing proof, missing runnable scripts, and risky commands
+- Select a concise list of prioritized runnable demo commands
+- Warn on missing proof, missing runnable scripts, and risky commands found
+  anywhere in the discovered package scripts
 - Provide JSON and Markdown output
 - Include fixture-backed tests and smoke validation
 
@@ -24,4 +26,5 @@ Create a reusable local agent skill that converts repository evidence into a con
 
 - Fixture demo plan includes runnable commands and proof paths
 - Unsupported claims are warned
-- Risky external-write commands are marked before rehearsal
+- Risky external-write scripts are named and source-linked before rehearsal,
+  even when they are outside the selected demo command list

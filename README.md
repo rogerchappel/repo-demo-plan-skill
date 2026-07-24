@@ -27,7 +27,11 @@ The JSON evidence file can include `coreWorkflow`, `proofPath`, `verification`, 
 node src/cli.js fixtures/sample-repo --format markdown
 ```
 
-The output includes a command list, five demo beats, proof paths, warnings, and a `ship` or `incubate` classification.
+The output includes up to four prioritized demo commands, five demo beats, proof
+paths, warnings, and a `ship` or `incubate` classification. The concise command
+list is separate from safety analysis: every discovered package script is
+checked for risky command text, including scripts that are not selected for the
+demo.
 
 ## Verification
 
@@ -49,12 +53,17 @@ installed `repo-demo-plan --help` command.
 
 - The planner does not run commands; it only recommends a rehearsal path.
 - Node package scripts are the first supported command source.
-- Risk detection is conservative and string-based.
+- Risk detection is conservative and string-based, and covers all discovered
+  package scripts rather than only the selected demo commands.
 - Missing README, docs, or skill files reduce confidence.
 
 ## Safety Notes
 
-This tool is local-only by default. It does not post to social platforms, create GitHub releases, publish packages, or mutate remote systems. Commands that look destructive or externally mutating are marked for review.
+This tool is local-only by default. It does not post to social platforms, create
+GitHub releases, publish packages, or mutate remote systems. Every discovered
+package script that looks destructive or externally mutating is named with its
+`package.json#scripts.<name>` source and marked for review, whether or not that
+script appears in the prioritized demo command list.
 
 See [SECURITY.md](SECURITY.md) for vulnerability reporting and
 [CONTRIBUTING.md](CONTRIBUTING.md) for local contribution checks.
