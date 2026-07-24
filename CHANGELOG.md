@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed safety analysis to inspect every discovered package script while keeping
+  the prioritized demo command list concise.
+- Added regression coverage and documentation for risky and benign scripts that
+  fall outside the selected demo commands.
 - Added an installed-tarball smoke check to prove the packaged CLI is runnable
   after `npm install`.
 - Added security and contributing guidance for public support workflows.
