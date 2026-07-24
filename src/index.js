@@ -151,8 +151,12 @@ function collectWarnings(repo, commands, beats, evidence) {
   if (!repo.hasReadme) warnings.push({ level: "fail", message: "README.md is missing, so the opening claim has no stable source." });
   if (!repo.hasSkill) warnings.push({ level: "warn", message: "SKILL.md is missing, so side-effect boundaries are not obvious." });
   if (commands.length === 0) warnings.push({ level: "fail", message: "No package scripts found for a runnable demo." });
-  for (const command of commands.filter((item) => item.risk === "warn")) {
-    warnings.push({ level: "warn", message: `Command '${command.command}' maps to a risky script and should be reviewed before rehearsal.` });
+  for (const script of repo.scripts.filter((item) => RISKY_COMMAND.test(item.command))) {
+    const source = `package.json#scripts.${script.name}`;
+    warnings.push({
+      level: "warn",
+      message: `Script '${script.name}' (${source}) contains a risky command and should be reviewed before rehearsal.`
+    });
   }
   for (const beat of beats) {
     if (String(beat.proof).startsWith("missing")) {
