@@ -19,7 +19,15 @@ test("flags risky package scripts and unsupported claims", () => {
   const plan = planDemo("fixtures/sample-repo", {
     evidence: { claims: [{ text: "Has production customers" }] }
   });
-  assert.ok(plan.warnings.some((warning) => warning.message.includes("risky script")));
+  assert.deepEqual(
+    plan.commands.map((command) => command.label),
+    ["smoke", "test", "check", "build"]
+  );
+  assert.ok(plan.warnings.some((warning) =>
+    warning.message.includes("publish-demo") &&
+    warning.message.includes("package.json#scripts.publish-demo")
+  ));
+  assert.ok(!plan.warnings.some((warning) => warning.message.includes("scripts.docs")));
   assert.ok(plan.warnings.some((warning) => warning.message.includes("Claim lacks proof")));
 });
 
