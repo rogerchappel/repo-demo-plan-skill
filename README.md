@@ -19,6 +19,11 @@ node src/cli.js fixtures/sample-repo --evidence fixtures/evidence.json --format 
 repo-demo-plan <repo-path> [--evidence evidence.json] [--format json|markdown]
 ```
 
+Options may appear before or after the repository path. Unknown options,
+duplicate `--evidence` or `--format` options, and options without a value exit
+with status 1 and print a concise diagnostic to stderr. `--help` and `-h` print
+usage and exit successfully.
+
 The JSON evidence file can include `coreWorkflow`, `proofPath`, `verification`, `limit`, and `claims`. Claims without proof are reported as warnings.
 
 ## Example
