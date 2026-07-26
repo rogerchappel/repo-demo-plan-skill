@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Reject unknown, duplicate, and valueless CLI options with clear diagnostics.
 - Fixed safety analysis to inspect every discovered package script while keeping
   the prioritized demo command list concise.
 - Added regression coverage and documentation for risky and benign scripts that
