@@ -11,7 +11,10 @@ Use this skill when an agent needs to prepare a live demo, recorded walkthrough,
 ## Workflow
 
 1. Run `repo-demo-plan <repo-path> --format markdown`.
-2. Review commands and warnings before rehearsing.
+2. Review commands and warnings before rehearsing. Generated script commands
+   select npm for `package-lock.json`, pnpm for `pnpm-lock.yaml`, or Yarn for
+   `yarn.lock`. With no supported lockfile they fall back to npm; conflicting
+   lockfiles use npm, then pnpm, then Yarn precedence.
 3. Confirm every claim has a proof path.
 4. Run the selected commands manually in the target repository.
 5. Add observed command output to the launch or video notes.

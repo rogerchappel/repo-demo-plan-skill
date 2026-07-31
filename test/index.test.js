@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { planDemo, formatMarkdown } from "../src/index.js";
 
 function runCli(args) {
@@ -21,6 +24,48 @@ test("builds a grounded demo plan from fixture repo", () => {
   assert.equal(plan.repo.name, "sample-agent-tool");
   assert.ok(plan.commands.some((command) => command.command === "npm run smoke"));
   assert.ok(plan.beats.some((beat) => beat.proof === "SKILL.md"));
+});
+
+function withRepositoryFixture(lockfiles, callback) {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "repo-demo-plan-manager-"));
+  try {
+    fs.writeFileSync(path.join(fixture, "package.json"), JSON.stringify({
+      name: "manager-fixture",
+      scripts: { test: "node --test" }
+    }));
+    fs.writeFileSync(path.join(fixture, "README.md"), "# Fixture\n");
+    for (const lockfile of lockfiles) fs.writeFileSync(path.join(fixture, lockfile), "");
+    callback(planDemo(fixture));
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
+for (const [lockfile, packageManager] of [
+  ["package-lock.json", "npm"],
+  ["pnpm-lock.yaml", "pnpm"],
+  ["yarn.lock", "yarn"]
+]) {
+  test(`uses ${packageManager} commands when ${lockfile} is present`, () => {
+    withRepositoryFixture([lockfile], (plan) => {
+      assert.equal(plan.repo.packageManager, packageManager);
+      assert.equal(plan.commands[0].command, `${packageManager} run test`);
+    });
+  });
+}
+
+test("falls back to npm when no supported lockfile is present", () => {
+  withRepositoryFixture([], (plan) => {
+    assert.equal(plan.repo.packageManager, "npm");
+    assert.equal(plan.commands[0].command, "npm run test");
+  });
+});
+
+test("uses documented precedence when supported lockfiles conflict", () => {
+  withRepositoryFixture(["yarn.lock", "pnpm-lock.yaml", "package-lock.json"], (plan) => {
+    assert.equal(plan.repo.packageManager, "npm");
+    assert.equal(plan.commands[0].command, "npm run test");
+  });
 });
 
 test("flags risky package scripts and unsupported claims", () => {
