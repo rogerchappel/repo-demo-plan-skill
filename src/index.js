@@ -12,6 +12,12 @@ const SCRIPT_WEIGHT = new Map([
 
 const RISKY_COMMAND = /\b(rm\s+-rf|git\s+push|npm\s+publish|gh\s+release|curl\b.*\|\s*sh|sudo\b|terraform\s+apply)\b/i;
 
+const PACKAGE_MANAGER_LOCKFILES = [
+  ["package-lock.json", "npm"],
+  ["pnpm-lock.yaml", "pnpm"],
+  ["yarn.lock", "yarn"]
+];
+
 export function loadEvidence(filePath) {
   if (!filePath) return {};
   const raw = fs.readFileSync(filePath, "utf8");
@@ -44,8 +50,15 @@ export function inspectRepository(repoPath) {
     docs,
     scripts,
     readmeHeadings: headings(readme),
-    packageManager: fs.existsSync(path.join(absolute, "package-lock.json")) ? "npm" : "npm"
+    packageManager: detectPackageManager(absolute)
   };
+}
+
+function detectPackageManager(root) {
+  for (const [lockfile, packageManager] of PACKAGE_MANAGER_LOCKFILES) {
+    if (fs.existsSync(path.join(root, lockfile))) return packageManager;
+  }
+  return "npm";
 }
 
 export function planDemo(repoPath, options = {}) {
