@@ -38,6 +38,13 @@ list is separate from safety analysis: every discovered package script is
 checked for risky command text, including scripts that are not selected for the
 demo.
 
+Script commands use the package manager indicated by a canonical lockfile:
+`package-lock.json` selects `npm`, `pnpm-lock.yaml` selects `pnpm`, and
+`yarn.lock` selects `yarn`. Repositories without one of these lockfiles fall
+back to `npm`. If multiple supported lockfiles are present, detection is
+deterministic and uses this precedence: npm, then pnpm, then Yarn. The planner
+only emits these commands; it does not execute them.
+
 ## Verification
 
 ```bash
