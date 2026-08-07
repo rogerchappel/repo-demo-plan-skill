@@ -21,7 +21,44 @@ const PACKAGE_MANAGER_LOCKFILES = [
 export function loadEvidence(filePath) {
   if (!filePath) return {};
   const raw = fs.readFileSync(filePath, "utf8");
-  return JSON.parse(raw);
+  let evidence;
+  try {
+    evidence = JSON.parse(raw);
+  } catch {
+    throw new Error("Evidence file contains invalid JSON.");
+  }
+  return validateEvidence(evidence);
+}
+
+export function validateEvidence(evidence) {
+  if (evidence === null || typeof evidence !== "object" || Array.isArray(evidence)) {
+    throw new Error("Evidence must be a JSON object.");
+  }
+
+  for (const field of ["coreWorkflow", "proofPath", "verification", "limit"]) {
+    if (evidence[field] !== undefined && typeof evidence[field] !== "string") {
+      throw new Error(`Evidence field '${field}' must be a string.`);
+    }
+  }
+
+  if (evidence.claims !== undefined) {
+    if (!Array.isArray(evidence.claims)) {
+      throw new Error("Evidence field 'claims' must be an array.");
+    }
+    for (const [index, claim] of evidence.claims.entries()) {
+      if (claim === null || typeof claim !== "object" || Array.isArray(claim)) {
+        throw new Error(`Evidence claim at index ${index} must be an object.`);
+      }
+      if (typeof claim.text !== "string") {
+        throw new Error(`Evidence claim at index ${index} field 'text' must be a string.`);
+      }
+      if (claim.proof !== undefined && typeof claim.proof !== "string") {
+        throw new Error(`Evidence claim at index ${index} field 'proof' must be a string.`);
+      }
+    }
+  }
+
+  return evidence;
 }
 
 export function inspectRepository(repoPath) {
@@ -63,7 +100,7 @@ function detectPackageManager(root) {
 
 export function planDemo(repoPath, options = {}) {
   const repo = inspectRepository(repoPath);
-  const evidence = options.evidence || {};
+  const evidence = validateEvidence(options.evidence ?? {});
   const chosenScripts = chooseScripts(repo.scripts);
   const commands = chosenScripts.map((script) => ({
     label: script.name,
