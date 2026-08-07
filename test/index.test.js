@@ -4,13 +4,24 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { planDemo, formatMarkdown } from "../src/index.js";
+import { loadEvidence, planDemo, formatMarkdown } from "../src/index.js";
 
 function runCli(args) {
   return spawnSync(process.execPath, ["src/cli.js", ...args], {
     cwd: new URL("..", import.meta.url),
     encoding: "utf8"
   });
+}
+
+function withEvidenceFile(contents, callback) {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "repo-demo-plan-evidence-"));
+  const evidencePath = path.join(fixture, "evidence.json");
+  try {
+    fs.writeFileSync(evidencePath, contents);
+    callback(evidencePath);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
 }
 
 test("builds a grounded demo plan from fixture repo", () => {
@@ -82,6 +93,45 @@ test("flags risky package scripts and unsupported claims", () => {
   ));
   assert.ok(!plan.warnings.some((warning) => warning.message.includes("scripts.docs")));
   assert.ok(plan.warnings.some((warning) => warning.message.includes("Claim lacks proof")));
+});
+
+test("loadEvidence rejects malformed JSON with a stable diagnostic", () => {
+  withEvidenceFile("{", (evidencePath) => {
+    assert.throws(() => loadEvidence(evidencePath), {
+      message: "Evidence file contains invalid JSON."
+    });
+  });
+});
+
+for (const [name, evidence, message] of [
+  ["non-object root", [], "Evidence must be a JSON object."],
+  ["wrong scalar type", { coreWorkflow: 42 }, "Evidence field 'coreWorkflow' must be a string."],
+  ["non-array claims", { claims: {} }, "Evidence field 'claims' must be an array."],
+  ["non-object claim", { claims: ["claim"] }, "Evidence claim at index 0 must be an object."],
+  ["claim without string text", { claims: [{}] }, "Evidence claim at index 0 field 'text' must be a string."],
+  ["claim with non-string proof", { claims: [{ text: "Claim", proof: false }] }, "Evidence claim at index 0 field 'proof' must be a string."]
+]) {
+  test(`planDemo rejects evidence with ${name}`, () => {
+    assert.throws(() => planDemo("fixtures/sample-repo", { evidence }), { message });
+  });
+
+  test(`CLI rejects evidence with ${name}`, () => {
+    withEvidenceFile(JSON.stringify(evidence), (evidencePath) => {
+      const result = runCli(["fixtures/sample-repo", "--evidence", evidencePath]);
+      assert.equal(result.status, 1);
+      assert.equal(result.stdout, "");
+      assert.equal(result.stderr, `${message}\n`);
+    });
+  });
+}
+
+test("CLI rejects malformed evidence JSON", () => {
+  withEvidenceFile("{", (evidencePath) => {
+    const result = runCli(["fixtures/sample-repo", "--evidence", evidencePath]);
+    assert.equal(result.status, 1);
+    assert.equal(result.stdout, "");
+    assert.equal(result.stderr, "Evidence file contains invalid JSON.\n");
+  });
 });
 
 test("formats markdown with commands and beats", () => {
