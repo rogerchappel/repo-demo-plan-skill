@@ -24,7 +24,22 @@ duplicate `--evidence` or `--format` options, and options without a value exit
 with status 1 and print a concise diagnostic to stderr. `--help` and `-h` print
 usage and exit successfully.
 
-The JSON evidence file can include `coreWorkflow`, `proofPath`, `verification`, `limit`, and `claims`. Claims without proof are reported as warnings.
+The evidence file must contain a JSON object. `coreWorkflow`, `proofPath`,
+`verification`, and `limit` are optional strings. `claims` is an optional array
+of objects with a required string `text` field and an optional string `proof`
+field, for example:
+
+```json
+{
+  "coreWorkflow": "Run the smoke command.",
+  "claims": [
+    { "text": "The demo is reproducible locally.", "proof": "npm run smoke" }
+  ]
+}
+```
+
+Claims without proof are reported as warnings. Invalid JSON or an invalid field
+shape exits with status 1 and prints a concise field-specific diagnostic.
 
 ## Example
 
