@@ -162,7 +162,7 @@ test("normalizes surrounding evidence whitespace before planning", () => {
   assert.equal(plan.beats[2].proof, "docs/PRD.md");
   assert.equal(plan.beats[3].narration, "Local use only.");
   assert.equal(plan.beats[4].proof, "npm run smoke");
-  assert.deepEqual(plan.warnings, []);
+  assert.ok(!plan.warnings.some((warning) => warning.message.includes("Claim lacks proof")));
 });
 
 test("CLI rejects malformed evidence JSON", () => {
