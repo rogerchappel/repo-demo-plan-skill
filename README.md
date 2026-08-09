@@ -27,7 +27,10 @@ usage and exit successfully.
 The evidence file must contain a JSON object. `coreWorkflow`, `proofPath`,
 `verification`, and `limit` are optional strings. `claims` is an optional array
 of objects with a required string `text` field and an optional string `proof`
-field, for example:
+field. Every supplied string is trimmed before planning and must contain at
+least one non-whitespace character; whitespace-only values are rejected with a
+field-specific error. This prevents blank demo beats and ensures a blank claim
+proof is reported as invalid rather than treated as evidence. For example:
 
 ```json
 {
