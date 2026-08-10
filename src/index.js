@@ -35,9 +35,10 @@ export function validateEvidence(evidence) {
     throw new Error("Evidence must be a JSON object.");
   }
 
+  const normalized = { ...evidence };
   for (const field of ["coreWorkflow", "proofPath", "verification", "limit"]) {
-    if (evidence[field] !== undefined && typeof evidence[field] !== "string") {
-      throw new Error(`Evidence field '${field}' must be a string.`);
+    if (evidence[field] !== undefined) {
+      normalized[field] = normalizeEvidenceString(evidence[field], `Evidence field '${field}'`);
     }
   }
 
@@ -45,20 +46,29 @@ export function validateEvidence(evidence) {
     if (!Array.isArray(evidence.claims)) {
       throw new Error("Evidence field 'claims' must be an array.");
     }
-    for (const [index, claim] of evidence.claims.entries()) {
+    normalized.claims = evidence.claims.map((claim, index) => {
       if (claim === null || typeof claim !== "object" || Array.isArray(claim)) {
         throw new Error(`Evidence claim at index ${index} must be an object.`);
       }
-      if (typeof claim.text !== "string") {
-        throw new Error(`Evidence claim at index ${index} field 'text' must be a string.`);
+      const normalizedClaim = {
+        ...claim,
+        text: normalizeEvidenceString(claim.text, `Evidence claim at index ${index} field 'text'`)
+      };
+      if (claim.proof !== undefined) {
+        normalizedClaim.proof = normalizeEvidenceString(claim.proof, `Evidence claim at index ${index} field 'proof'`);
       }
-      if (claim.proof !== undefined && typeof claim.proof !== "string") {
-        throw new Error(`Evidence claim at index ${index} field 'proof' must be a string.`);
-      }
-    }
+      return normalizedClaim;
+    });
   }
 
-  return evidence;
+  return normalized;
+}
+
+function normalizeEvidenceString(value, label) {
+  if (typeof value !== "string") throw new Error(`${label} must be a string.`);
+  const normalized = value.trim();
+  if (!normalized) throw new Error(`${label} must not be blank.`);
+  return normalized;
 }
 
 export function inspectRepository(repoPath) {

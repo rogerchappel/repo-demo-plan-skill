@@ -125,6 +125,46 @@ for (const [name, evidence, message] of [
   });
 }
 
+for (const [name, evidence, message] of [
+  ["blank core workflow", { coreWorkflow: " \t\n" }, "Evidence field 'coreWorkflow' must not be blank."],
+  ["blank proof path", { proofPath: " \t\n" }, "Evidence field 'proofPath' must not be blank."],
+  ["blank verification", { verification: " \t\n" }, "Evidence field 'verification' must not be blank."],
+  ["blank limit", { limit: " \t\n" }, "Evidence field 'limit' must not be blank."],
+  ["blank claim text", { claims: [{ text: " \t\n" }] }, "Evidence claim at index 0 field 'text' must not be blank."],
+  ["blank claim proof", { claims: [{ text: "Claim", proof: " \t\n" }] }, "Evidence claim at index 0 field 'proof' must not be blank."]
+]) {
+  test(`planDemo rejects evidence with ${name}`, () => {
+    assert.throws(() => planDemo("fixtures/sample-repo", { evidence }), { message });
+  });
+
+  test(`CLI rejects evidence with ${name}`, () => {
+    withEvidenceFile(JSON.stringify(evidence), (evidencePath) => {
+      const result = runCli(["fixtures/sample-repo", "--evidence", evidencePath]);
+      assert.equal(result.status, 1);
+      assert.equal(result.stdout, "");
+      assert.equal(result.stderr, `${message}\n`);
+    });
+  });
+}
+
+test("normalizes surrounding evidence whitespace before planning", () => {
+  const plan = planDemo("fixtures/sample-repo", {
+    evidence: {
+      coreWorkflow: "  Run the smoke command.  ",
+      proofPath: "  docs/PRD.md  ",
+      verification: "  npm run smoke  ",
+      limit: "  Local use only.  ",
+      claims: [{ text: "  Reproducible locally.  ", proof: "  npm run smoke  " }]
+    }
+  });
+
+  assert.equal(plan.beats[2].narration, "Run the smoke command.");
+  assert.equal(plan.beats[2].proof, "docs/PRD.md");
+  assert.equal(plan.beats[3].narration, "Local use only.");
+  assert.equal(plan.beats[4].proof, "npm run smoke");
+  assert.ok(!plan.warnings.some((warning) => warning.message.includes("Claim lacks proof")));
+});
+
 test("CLI rejects malformed evidence JSON", () => {
   withEvidenceFile("{", (evidencePath) => {
     const result = runCli(["fixtures/sample-repo", "--evidence", evidencePath]);
