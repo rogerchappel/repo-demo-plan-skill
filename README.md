@@ -43,6 +43,9 @@ proof is reported as invalid rather than treated as evidence. For example:
 
 Claims without proof are reported as warnings. Invalid JSON or an invalid field
 shape exits with status 1 and prints a concise field-specific diagnostic.
+JSON output preserves embedded line breaks in evidence and repository-derived
+values. Markdown output replaces embedded CR/LF separators with spaces so each
+value remains contained in its heading, beat, command, proof, or warning line.
 
 ## Example
 

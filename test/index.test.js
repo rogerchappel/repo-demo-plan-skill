@@ -181,6 +181,54 @@ test("formats markdown with commands and beats", () => {
   assert.match(markdown, /## Beats/);
 });
 
+test("contains multiline evidence and repository values within Markdown lines", () => {
+  const plan = planDemo("fixtures/sample-repo", {
+    evidence: {
+      coreWorkflow: "workflow one\nworkflow two",
+      proofPath: "proof one\r\nproof two",
+      verification: "verify one\rverify two",
+      limit: "limit one\nlimit two",
+      claims: [{ text: "claim one\nclaim two" }]
+    }
+  });
+  plan.repo.name = "repo one\nrepo two";
+  plan.commands[0].source = "package.json\r\n# injected";
+
+  const markdown = formatMarkdown(plan);
+
+  for (const continuation of ["workflow two", "proof two", "verify two", "limit two", "claim two", "repo two", "# injected"]) {
+    assert.ok(!markdown.split("\n").includes(continuation));
+  }
+  assert.match(markdown, /^# Demo Plan: repo one repo two$/m);
+  assert.match(markdown, /Narration: workflow one workflow two/);
+  assert.match(markdown, /Proof: proof one proof two/);
+  assert.match(markdown, /Proof: verify one verify two/);
+  assert.match(markdown, /Narration: limit one limit two/);
+  assert.match(markdown, /Claim lacks proof: claim one claim two/);
+  assert.match(markdown, /package\.json # injected/);
+  assert.equal(plan.beats[2].narration, "workflow one\nworkflow two");
+});
+
+test("CLI contains multiline evidence in Markdown and preserves it in JSON", () => {
+  const evidence = {
+    coreWorkflow: "workflow one\nworkflow two",
+    proofPath: "proof one\r\nproof two",
+    verification: "verify one\rverify two",
+    limit: "limit one\nlimit two",
+    claims: [{ text: "claim one\nclaim two" }]
+  };
+  withEvidenceFile(JSON.stringify(evidence), (evidencePath) => {
+    const markdown = runCli(["fixtures/sample-repo", "--evidence", evidencePath, "--format", "markdown"]);
+    const json = runCli(["fixtures/sample-repo", "--evidence", evidencePath, "--format", "json"]);
+    assert.equal(markdown.status, 0, markdown.stderr);
+    assert.equal(json.status, 0, json.stderr);
+    assert.match(markdown.stdout, /Narration: workflow one workflow two/);
+    assert.match(markdown.stdout, /Claim lacks proof: claim one claim two/);
+    assert.equal(JSON.parse(json.stdout).beats[2].narration, evidence.coreWorkflow);
+    assert.equal(JSON.parse(json.stdout).beats[4].proof, evidence.verification);
+  });
+});
+
 test("CLI rejects unknown options", () => {
   const result = runCli(["--bogus"]);
   assert.equal(result.status, 1);

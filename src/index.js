@@ -162,7 +162,7 @@ export function planDemo(repoPath, options = {}) {
 
 export function formatMarkdown(plan) {
   const lines = [
-    `# Demo Plan: ${plan.repo.name}`,
+    `# Demo Plan: ${markdownLine(plan.repo.name)}`,
     "",
     `Classification: ${plan.classification}`,
     "",
@@ -172,25 +172,29 @@ export function formatMarkdown(plan) {
     lines.push("- No package scripts were discovered.");
   } else {
     for (const command of plan.commands) {
-      lines.push(`- ${command.command} (${command.risk}; ${command.source})`);
+      lines.push(`- ${markdownLine(command.command)} (${markdownLine(command.risk)}; ${markdownLine(command.source)})`);
     }
   }
   lines.push("", "## Beats");
   for (const [index, beat] of plan.beats.entries()) {
-    lines.push(`${index + 1}. ${beat.title}`);
-    lines.push(`   - Narration: ${beat.narration}`);
-    if (beat.command) lines.push(`   - Command: ${beat.command}`);
-    lines.push(`   - Proof: ${beat.proof}`);
+    lines.push(`${index + 1}. ${markdownLine(beat.title)}`);
+    lines.push(`   - Narration: ${markdownLine(beat.narration)}`);
+    if (beat.command) lines.push(`   - Command: ${markdownLine(beat.command)}`);
+    lines.push(`   - Proof: ${markdownLine(beat.proof)}`);
   }
   lines.push("", "## Warnings");
   if (plan.warnings.length === 0) {
     lines.push("- None");
   } else {
     for (const warning of plan.warnings) {
-      lines.push(`- ${warning.level}: ${warning.message}`);
+      lines.push(`- ${markdownLine(warning.level)}: ${markdownLine(warning.message)}`);
     }
   }
   return `${lines.join("\n")}\n`;
+}
+
+function markdownLine(value) {
+  return String(value).replace(/\r\n?|\n/g, " ");
 }
 
 function chooseScripts(scripts) {
