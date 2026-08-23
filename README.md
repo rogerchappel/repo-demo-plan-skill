@@ -103,7 +103,12 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting and
 
 ## Install
 
+The package is not currently published to the npm registry. Install and run it
+from the public source repository:
+
 ```bash
-npm install repo-demo-plan-skill
-npx repo-demo-plan --help
+git clone https://github.com/rogerchappel/repo-demo-plan-skill.git
+cd repo-demo-plan-skill
+npm install
+npm exec -- repo-demo-plan --help
 ```
