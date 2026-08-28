@@ -24,6 +24,12 @@ duplicate `--evidence` or `--format` options, and options without a value exit
 with status 1 and print a concise diagnostic to stderr. `--help` and `-h` print
 usage and exit successfully.
 
+The repository path must exist and be a directory. If it contains a
+`package.json`, the manifest must be valid JSON with an object root, and its
+optional `scripts` field must be an object of non-blank string commands with
+non-blank names. Invalid repository input exits with status 1 and prints a
+concise diagnostic to stderr; no demo plan or classification is emitted.
+
 The evidence file must contain a JSON object. `coreWorkflow`, `proofPath`,
 `verification`, and `limit` are optional strings. `claims` is an optional array
 of objects with a required string `text` field and an optional string `proof`
