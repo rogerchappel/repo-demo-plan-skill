@@ -73,13 +73,19 @@ function normalizeEvidenceString(value, label) {
 
 export function inspectRepository(repoPath) {
   const absolute = path.resolve(repoPath);
+  let repositoryStats;
+  try {
+    repositoryStats = fs.statSync(absolute);
+  } catch (error) {
+    if (error.code === "ENOENT") throw new Error("Repository path does not exist.");
+    throw error;
+  }
+  if (!repositoryStats.isDirectory()) throw new Error("Repository path must be a directory.");
   const packagePath = path.join(absolute, "package.json");
   const readmePath = findFirst(absolute, ["README.md", "readme.md"]);
   const docsDir = path.join(absolute, "docs");
   const skillPath = path.join(absolute, "SKILL.md");
-  const packageJson = fs.existsSync(packagePath)
-    ? JSON.parse(fs.readFileSync(packagePath, "utf8"))
-    : {};
+  const packageJson = loadPackageManifest(packagePath);
   const readme = readmePath ? fs.readFileSync(readmePath, "utf8") : "";
   const docs = fs.existsSync(docsDir)
     ? fs.readdirSync(docsDir).filter((name) => name.endsWith(".md")).sort()
@@ -99,6 +105,31 @@ export function inspectRepository(repoPath) {
     readmeHeadings: headings(readme),
     packageManager: detectPackageManager(absolute)
   };
+}
+
+function loadPackageManifest(packagePath) {
+  if (!fs.existsSync(packagePath)) return {};
+  let manifest;
+  try {
+    manifest = JSON.parse(fs.readFileSync(packagePath, "utf8"));
+  } catch {
+    throw new Error("package.json contains invalid JSON.");
+  }
+  if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new Error("package.json must contain a JSON object.");
+  }
+  if (manifest.scripts !== undefined) {
+    if (manifest.scripts === null || typeof manifest.scripts !== "object" || Array.isArray(manifest.scripts)) {
+      throw new Error("package.json field 'scripts' must be an object.");
+    }
+    for (const [name, command] of Object.entries(manifest.scripts)) {
+      if (!name.trim()) throw new Error("package.json script names must not be blank.");
+      if (typeof command !== "string" || !command.trim()) {
+        throw new Error(`package.json script '${name}' must be a non-blank string.`);
+      }
+    }
+  }
+  return manifest;
 }
 
 function detectPackageManager(root) {
