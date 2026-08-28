@@ -52,6 +52,51 @@ function withRepositoryFixture(lockfiles, callback) {
   }
 }
 
+function withManifestFixture(contents, callback) {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "repo-demo-plan-manifest-"));
+  try {
+    fs.writeFileSync(path.join(fixture, "package.json"), contents);
+    fs.writeFileSync(path.join(fixture, "README.md"), "# Fixture\n");
+    fs.writeFileSync(path.join(fixture, "SKILL.md"), "# Fixture\n");
+    callback(fixture);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+}
+
+function assertApiAndCliReject(repoPath, message) {
+  assert.throws(() => planDemo(repoPath), { message });
+  const result = runCli([repoPath]);
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, `${message}\n`);
+}
+
+test("API and CLI reject a missing repository path", () => {
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), "repo-demo-plan-missing-"));
+  fs.rmSync(fixture, { recursive: true, force: true });
+  assertApiAndCliReject(fixture, "Repository path does not exist.");
+});
+
+test("API and CLI reject a repository path that is a file", () => {
+  withEvidenceFile("not a directory", (filePath) => {
+    assertApiAndCliReject(filePath, "Repository path must be a directory.");
+  });
+});
+
+for (const [name, contents, message] of [
+  ["malformed JSON", "{", "package.json contains invalid JSON."],
+  ["non-object manifest", "[]", "package.json must contain a JSON object."],
+  ["non-object scripts", JSON.stringify({ scripts: "test" }), "package.json field 'scripts' must be an object."],
+  ["non-string script value", JSON.stringify({ scripts: { test: 42 } }), "package.json script 'test' must be a non-blank string."],
+  ["blank script value", JSON.stringify({ scripts: { test: "  " } }), "package.json script 'test' must be a non-blank string."],
+  ["blank script name", JSON.stringify({ scripts: { " ": "node --test" } }), "package.json script names must not be blank."]
+]) {
+  test(`API and CLI reject ${name}`, () => {
+    withManifestFixture(contents, (fixture) => assertApiAndCliReject(fixture, message));
+  });
+}
+
 for (const [lockfile, packageManager] of [
   ["package-lock.json", "npm"],
   ["pnpm-lock.yaml", "pnpm"],
